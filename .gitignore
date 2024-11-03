@@ -1,0 +1,17 @@
+# Common
+*.log
+*.tmp
+*.bak
+*.orig
+
+# IDE and editor directories
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build and distribution files
+/build/
+/dist/
+/out/
