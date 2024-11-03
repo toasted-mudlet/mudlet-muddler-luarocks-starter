@@ -8,6 +8,7 @@ description = {
    license = "*** please specify a license ***"
 }
 dependencies = {
+   "inspect >= 3.0",
    "lua ~> 5.1"
 }
 build = {
