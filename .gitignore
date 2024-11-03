@@ -1,3 +1,9 @@
+# LuaRocks
+/luarocks
+/lua
+/lua_modules
+/.luarocks
+
 # Common
 *.log
 *.tmp
