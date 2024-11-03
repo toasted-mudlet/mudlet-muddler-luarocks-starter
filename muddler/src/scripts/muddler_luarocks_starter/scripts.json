@@ -1,0 +1,8 @@
+[
+  {
+    "name": "muddler_luarocks_starter_example_script",
+    "eventHandlerList": [
+      "sysInstall"
+    ]
+  }
+]

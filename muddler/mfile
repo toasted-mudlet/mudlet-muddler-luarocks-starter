@@ -1,0 +1,7 @@
+{
+  "package": "muddler_luarocks_starter",
+  "version": "dev-1",
+  "author": "github.com/toasted",
+  "title": "Muddler & LuaRocks Starter Package",
+  "outputFile": true
+}
