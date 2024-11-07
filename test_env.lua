@@ -14,7 +14,7 @@ for path in package.cpath:gmatch("[^;]+") do
 end
 
 print("\nTrying to load an internal module from src ('test'):")
-local status, module = pcall(require, "test")
+local status, module = pcall(require, "test.TestableClass")
 if status then
     print("  Successfully loaded 'test'")
 else
