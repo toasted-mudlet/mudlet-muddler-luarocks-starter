@@ -11,6 +11,9 @@ MUDs (Multi-User Dungeons).
 - Project scaffolding for new Mudlet packages
 - Ready-to-use [muddler](https://github.com/demonnic/muddler) build configuration
 - [LuaRocks](https://luarocks.org/) support for dependency management
+- GitHub Actions CI for automated testing and packaging, including dev snapshots
+  and tagged releases.  
+  [See CI workflow summary below.](#continuous-integration)
 
 > **Note:**  
 > This starter is intended for experimental, proof-of-concept applications that
@@ -74,6 +77,22 @@ MUDs (Multi-User Dungeons).
 
 > **Note:** This is a project scaffolding template. No product-specific code or
 > features are included.
+
+## Continuous Integration
+
+This repository uses GitHub Actions for automated testing and packaging:
+
+- **Dev Snapshot:**  
+  Builds and tests a development snapshot on every push or pull request to
+  `main`, and on manual trigger. Uploads the package as an artifact.
+- **Manual Release:**  
+  Manually triggered release that builds, tests, tags, and publishes a new
+  versioned package and GitHub Release.
+- **Tag Release:**  
+  Automatically builds, tests, and publishes a release package and GitHub
+  Release whenever a new version tag is pushed.
+
+See `.github/workflows/` for workflow definitions.
 
 ---
 
