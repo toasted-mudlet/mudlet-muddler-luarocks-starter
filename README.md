@@ -88,7 +88,7 @@ consider adding the following attribution or similar for all derived code:
 
 ## License
 
-Copyright © 2024 github.com/toasted323
+Copyright © 2024-2025 github.com/toasted323
 
 This project is licensed under the MIT License.  
 See [LICENSE](LICENSE) in the root of this repository for full details.
