@@ -1,0 +1,106 @@
+name: Tag Release
+
+permissions:
+  contents: write
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch all tags
+        run: git fetch --tags --force
+
+      - name: Generate version string
+        id: version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          HASH=$(git rev-parse --short=6 HEAD)
+          DATETIME=$(date +'%Y%m%d-%H%M')
+          VERSION_STRING="${VERSION}-${HASH}-${DATETIME}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "TAG=$TAG" >> $GITHUB_ENV
+          echo "VERSION_STRING=$VERSION_STRING" >> $GITHUB_ENV
+
+      - name: Show version information
+        run: |
+          echo "Build version: ${{ env.VERSION_STRING }}"
+          echo "Release version: ${{ env.VERSION }}"
+          echo "Tag: ${{ env.TAG }}"
+
+      - name: Set up Lua 5.1
+        uses: leafo/gh-actions-lua@v11
+        with:
+          luaVersion: "5.1.5"
+
+      - name: Set up LuaRocks
+        uses: leafo/gh-actions-luarocks@v4
+
+      - name: Install dependencies
+        run: luarocks install --tree=lua_modules --deps-only mudlet-package-dev-1.rockspec
+
+      - name: Install busted
+        run: luarocks install --tree=lua_modules busted
+
+      - name: Run tests
+        run: chmod +x ./scripts/run_tests.sh && ./scripts/run_tests.sh
+
+      - name: Compose build context
+        run: chmod +x ./scripts/compose_build_context.sh && ./scripts/compose_build_context.sh
+
+      - name: Add version manifest to build context
+        run: |
+          mkdir -p muddler/src/resources
+          echo "${{ env.VERSION_STRING }}" > muddler/src/resources/version.txt
+
+      - name: Inject version into build context
+        run: chmod +x ./scripts/inject_version.sh && ./scripts/inject_version.sh "${{ env.VERSION }}"
+
+      - name: Build with muddler
+        uses: demonnic/build-with-muddler@v1.4
+        with:
+          workingDir: muddler
+
+      - name: Upload production artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: muddler_luarocks_starter-${{ env.VERSION_STRING }}.mpackage
+          path: muddler/build/muddler_luarocks_starter.mpackage
+          retention-days: 14
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.TAG }}
+          release_name: Release ${{ env.TAG }}
+          body: |
+            Automated release for version ${{ env.VERSION_STRING }}.
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: muddler/build/muddler_luarocks_starter.mpackage
+          asset_name: muddler_luarocks_starter-${{ env.TAG }}.mpackage
+          asset_content_type: application/octet-stream
+
+      - name: Summary
+        run: |
+          echo "Release ${{ env.TAG }} completed successfully."
