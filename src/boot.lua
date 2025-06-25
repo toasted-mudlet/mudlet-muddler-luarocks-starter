@@ -1,69 +1,71 @@
 --[[
-    Basic Package Environment Bootstrapper
+    Mudlet Package Bootstrapper
 
-    This module adjusts Lua's package.path to include package-specific script and module directories.
+    Sets up practical, package-level isolation for your package's runtime environment.
+    - Keeps your globals and dependencies separate from other packages.
+    - Ensures event handlers run in your package's environment.
+    - Not a security sandbox—just pragmatic isolation.
+
+    See the main README for details on namespace naming, event-driven integration, and
+    best practices for direct API calls.
 ]]
 
-local function addPath(existingPaths, newPath, pathSep)
-    if existingPaths == '' then
-        return newPath
-    elseif not string.find(existingPaths, newPath, 1, true) then
-        return newPath .. pathSep .. existingPaths
-    end
-    return existingPaths
-end
-
 return function(packageName)
-    local safePackageName = packageName:gsub("[^%w_]", "_")
-    local packageId = "__" .. safePackageName .. "__"
-    local namespace = _G[packageId]
+    local safePackageName = packageName:gsub('[^%w_]', '_')
+    local dunderPackageName = '__' .. safePackageName .. '__'
 
-    if not namespace then
-        namespace = {
-            packageName = packageName,
-            bootCount = 1
-        }
+    -- Path setup
+    local sep = package.config:sub(1, 1)
+    local pathSep = ';'
+    local mudletHomeDir = getMudletHomeDir()
+    local basePath = mudletHomeDir .. sep .. packageName .. sep .. 'lua'
 
-        local sep = package.config:sub(1, 1)
-        local pathSep = ';'
-        local mudletHomeDir = getMudletHomeDir()
-        local basePath = mudletHomeDir .. sep .. namespace.packageName .. sep .. 'lua'
-        namespace.basePath = basePath
+    -- Compose package-local paths
+    local scriptPathLua = basePath .. sep .. 'scripts' .. sep .. '?.lua'
+    local scriptPathInit = basePath .. sep .. 'scripts' .. sep .. '?' .. sep .. 'init.lua'
+    local luaVersion = _VERSION:match('%d+%.%d+')
+    local basePathLuaModules = basePath .. sep .. 'lua_modules' .. sep .. 'share' .. sep .. 'lua' .. sep .. luaVersion
+    local luaModulesPathLua = basePathLuaModules .. sep .. '?.lua'
+    local luaModulesPathInit = basePathLuaModules .. sep .. '?' .. sep .. 'init.lua'
 
-        local scriptPathLua = basePath .. sep .. 'scripts' .. sep .. '?.lua'
-        local scriptPathInit = basePath .. sep .. 'scripts' .. sep .. '?' .. sep .. 'init.lua'
-        local luaVersion = _VERSION:match('%d+%.%d+')
+    -- Load isolated namespace
+    local isolatedNamespacePath = basePath .. sep .. 'scripts' .. sep .. 'boot_env' .. sep .. 'isolated_namespace.lua'
+    local isolatedNamespaceCreator = assert(loadfile(isolatedNamespacePath))()
 
-        package.path = addPath(package.path, scriptPathLua, pathSep)
-        package.path = addPath(package.path, scriptPathInit, pathSep)
+    -- Load isolated require
+    local isolatedRequirePath = basePath .. sep .. 'scripts' .. sep .. 'boot_env' .. sep .. 'isolated_require.lua'
+    local isolatedRequireCreator = assert(loadfile(isolatedRequirePath))()
 
-        local basePathLuaModules = basePath .. sep .. 'lua_modules' .. sep .. 'share' .. sep .. 'lua' .. sep .. luaVersion
-        local luaModulesPathLua = basePathLuaModules .. sep .. '?.lua'
-        local luaModulesPathInit = basePathLuaModules .. sep .. '?' .. sep .. 'init.lua'
+    -- Create namespace and runtime env
+    local namespace = isolatedNamespaceCreator()
+    local require_ = isolatedRequireCreator(dunderPackageName, scriptPathLua, scriptPathInit, luaModulesPathLua,
+        luaModulesPathInit, namespace)
 
-        package.path = addPath(package.path, luaModulesPathLua, pathSep)
-        package.path = addPath(package.path, luaModulesPathInit, pathSep)
+    namespace.require = require_
+    _G[dunderPackageName] = namespace
+    setfenv(1, namespace)
 
-        namespace.path = package.path
-        namespace.cpath = package.cpath
+    debugc('[' .. dunderPackageName .. '] booting ...')
 
-        _G[packageId] = namespace
+    local ok, err = pcall(function()
+        local app = require('app')
+        app:start()
+    end)
+
+    if not ok then
+        debugc('[' .. dunderPackageName .. '] boot failed: ' .. tostring(err) .. "\n" .. debug.traceback())
+        error(tostring(err))
     else
-        namespace.bootCount = namespace.bootCount + 1
+        debugc('[' .. dunderPackageName .. '] booted successfully')
     end
 
-     debugc('[' .. packageId .. '] booting ...')
-
-        local ok, err = pcall(function()
-            local app = require('app')
-            app:start(packageId, packageName)
-        end)
-
-        if not ok then
-            debugc('[' .. packageId .. '] boot failed: ' .. tostring(err) .. "\n" .. debug.traceback())
-            error(tostring(err))
+    print("=== Loaded Lua Packages ===")
+    for k in pairs(package.loaded) do
+        if tostring(k):find(dunderPackageName, 1, true) then
+            print("* " .. k)
         else
-            debugc('[' .. packageId .. '] booted successfully')
+            print("  " .. k)
         end
+    end
+    print("=== End of Loaded Packages ===")
 end
-

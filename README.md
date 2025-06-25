@@ -14,6 +14,10 @@ MUDs (Multi-User Dungeons).
 - GitHub Actions CI for automated testing and packaging, including dev snapshots
   and tagged releases.  
   [See CI workflow summary below.](#continuous-integration)
+- Package-level environment isolation: each package runs in its own Lua 
+  environment, keeping globals and event handlers separate from other packages
+  and Mudlet itself, and enabling isolated initialization of your app code.  
+  [See package isolation details.](docs/package-isolation.md)
 
 > **Note:**  
 > This starter is intended for experimental, proof-of-concept applications that
@@ -41,18 +45,35 @@ MUDs (Multi-User Dungeons).
 
 ## Caveats
 
-- **No package isolation:** Mudlet’s Lua environment is global, so packages
-  may interfere via globals or event handlers.
-- **Module name collisions:** Modules are cached globally by name; use unique
-  namespaced module names to avoid conflicts.
-- **Pure-Lua dependencies only:** Binary LuaRocks modules are not supported for
-  inclusion in Mudlet packages and may not work or may conflict with Mudlet’s 
-  own binaries.
-- **Shared environment:** All packages share `package.path`, `package.loaded`,
-  and Mudlet globals unless you implement custom loaders and strict namespacing.
-- **No security sandbox:** Malicious or buggy code can affect the entire 
-  Mudlet session.
-
+- **Pragmatic package isolation:**  
+  While this template provides strong environment isolation for your package 
+  code and event handlers, Mudlet’s Lua environment is still global at its core.
+  Packages that intentionally bypass the isolation mechanisms (e.g., by writing 
+  directly to `_G`) can escape and interfere with each other.
+- **Module name collisions:**  
+  In standard Mudlet scripting, modules are cached globally by name. With this
+  template, your package’s custom `require` ensures modules are namespaced and 
+  isolated, while remaining transparently cached. However, use of the global 
+  `require` can still cause conflicts.
+- **Pure-Lua dependencies only:**  
+  Only pure-Lua LuaRocks modules are supported. Packaging of native (binary)
+  modules is not supported and may not work reliably.
+- **Shared base environment:**  
+  All packages inherit from Mudlet’s global environment. This means global 
+  variables and functions defined outside isolated environments remain visible
+  unless explicitly hidden or shadowed.
+- **No security sandbox:**  
+  This isolation is pragmatic, not security-focused. Malicious or buggy code 
+  can still affect the entire Mudlet session if it deliberately escapes its
+  environment.
+- **Direct global access remains possible:**  
+  Code can still assign to or read from `_G` directly if it chooses, bypassing 
+  the isolation. Use care when integrating with legacy scripts or third-party
+  packages.
+- **Event handler isolation relies on registration:**  
+  Only event handlers registered from within the isolated environment are 
+  wrapped. Handlers registered globally or from outside the package context may 
+  not be isolated.
 
 ## Getting Started
 
