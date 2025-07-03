@@ -48,7 +48,7 @@ return function(packageName)
 
     local ok, err = pcall(function()
         local app = require('app')
-        app:start()
+        app:start(packageId, packageName)
     end)
 
     if not ok then
