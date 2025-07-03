@@ -12,7 +12,7 @@
 
 return function(packageName)
     local safePackageName = packageName:gsub('[^%w_]', '_')
-    local dunderPackageName = '__' .. safePackageName .. '__'
+    local packageId = '__' .. safePackageName .. '__'
 
     -- Path setup
     local sep = package.config:sub(1, 1)
@@ -38,14 +38,14 @@ return function(packageName)
 
     -- Create namespace and runtime env
     local namespace = isolatedNamespaceCreator()
-    local require_ = isolatedRequireCreator(dunderPackageName, scriptPathLua, scriptPathInit, luaModulesPathLua,
+    local require_ = isolatedRequireCreator(packageId, scriptPathLua, scriptPathInit, luaModulesPathLua,
         luaModulesPathInit, namespace)
 
     namespace.require = require_
-    _G[dunderPackageName] = namespace
+    _G[packageId] = namespace
     setfenv(1, namespace)
 
-    debugc('[' .. dunderPackageName .. '] booting ...')
+    debugc('[' .. packageId .. '] booting ...')
 
     local ok, err = pcall(function()
         local app = require('app')
@@ -53,15 +53,15 @@ return function(packageName)
     end)
 
     if not ok then
-        debugc('[' .. dunderPackageName .. '] boot failed: ' .. tostring(err) .. "\n" .. debug.traceback())
+        debugc('[' .. packageId .. '] boot failed: ' .. tostring(err) .. "\n" .. debug.traceback())
         error(tostring(err))
     else
-        debugc('[' .. dunderPackageName .. '] booted successfully')
+        debugc('[' .. packageId .. '] booted successfully')
     end
 
     print("=== Loaded Lua Packages ===")
     for k in pairs(package.loaded) do
-        if tostring(k):find(dunderPackageName, 1, true) then
+        if tostring(k):find(packageId, 1, true) then
             print("* " .. k)
         else
             print("  " .. k)

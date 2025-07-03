@@ -1,7 +1,7 @@
 local isolated_require = require('boot_env.isolated_require')
 
 local base = './tests/test_modules'
-local dunderPackageName = '__isolated__'
+local packageId = '__isolated__'
 
 local scriptPathLua = base .. '/?.lua'
 local scriptPathInit = base .. '/?/init.lua'
@@ -13,7 +13,7 @@ describe('isolated_require (basic)', function()
     local namespace = {}
 
     setup(function()
-        require_ = isolated_require(dunderPackageName, scriptPathLua, scriptPathInit, luaModulesPathLua,
+        require_ = isolated_require(packageId, scriptPathLua, scriptPathInit, luaModulesPathLua,
             luaModulesPathInit, namespace)
     end)
 
@@ -21,14 +21,14 @@ describe('isolated_require (basic)', function()
         local foo = require_('foo')
         assert.is_table(foo)
         assert.are.equal('foo value', foo.foo)
-        assert.is_truthy(package.loaded[dunderPackageName .. 'foo'])
+        assert.is_truthy(package.loaded[packageId .. 'foo'])
     end)
 
     it('loads an init.lua module', function()
         local bar = require_('bar')
         assert.is_table(bar)
         assert.are.equal('bar value', bar.bar)
-        assert.is_truthy(package.loaded[dunderPackageName .. 'bar'])
+        assert.is_truthy(package.loaded[packageId .. 'bar'])
     end)
 
     it('returns error for missing module', function()
@@ -49,7 +49,7 @@ describe('isolated_require (advanced)', function()
 
     before_each(function()
         namespace = {}
-        require_ = isolated_require(dunderPackageName, scriptPathLua, scriptPathInit, luaModulesPathLua,
+        require_ = isolated_require(packageId, scriptPathLua, scriptPathInit, luaModulesPathLua,
             luaModulesPathInit, namespace)
         namespace.require = require_
     end)
@@ -60,8 +60,8 @@ describe('isolated_require (advanced)', function()
         assert.are.equal('nested', nested.value)
         assert.is_table(nested.inner)
         assert.are.equal('inner', nested.inner.value)
-        assert.is_truthy(package.loaded[dunderPackageName .. 'nested'])
-        assert.is_truthy(package.loaded[dunderPackageName .. 'inner'])
+        assert.is_truthy(package.loaded[packageId .. 'nested'])
+        assert.is_truthy(package.loaded[packageId .. 'inner'])
     end)
 
     it('handles circular dependencies', function()
