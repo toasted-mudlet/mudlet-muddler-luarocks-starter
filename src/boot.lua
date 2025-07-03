@@ -16,7 +16,6 @@ return function(packageName)
 
     -- Path setup
     local sep = package.config:sub(1, 1)
-    local pathSep = ';'
     local mudletHomeDir = getMudletHomeDir()
     local basePath = mudletHomeDir .. sep .. packageName .. sep .. 'lua'
 
