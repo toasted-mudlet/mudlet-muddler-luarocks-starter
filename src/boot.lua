@@ -57,14 +57,4 @@ return function(packageName)
     else
         debugc('[' .. packageId .. '] booted successfully')
     end
-
-    print("=== Loaded Lua Packages ===")
-    for k in pairs(package.loaded) do
-        if tostring(k):find(packageId, 1, true) then
-            print("* " .. k)
-        else
-            print("  " .. k)
-        end
-    end
-    print("=== End of Loaded Packages ===")
 end
