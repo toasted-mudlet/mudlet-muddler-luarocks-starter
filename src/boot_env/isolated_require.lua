@@ -9,23 +9,23 @@ local function addPath(existingPaths, newPath, pathSep)
     return existingPaths
 end
 
-return function(dunderPackageName, scriptPathLua, scriptPathInit, luaModulesPathLua, luaModulesPathInit, env)
-    return function(modname)
-        local ns_modname = dunderPackageName .. modname
+return function(namespaceId, scriptPathLua, scriptPathInit, luaModulesPathLua, luaModulesPathInit, env)
+    return function(moduleName)
+        local namespacedModuleId = namespaceId .. "." .. moduleName
 
         -- 1. cached namespaced module
-        if package.loaded[ns_modname] then
-            return package.loaded[ns_modname]
+        if package.loaded[namespacedModuleId] then
+            return package.loaded[namespacedModuleId]
         end
 
         -- 2. namespaced module preload
-        local loader = package.preload[ns_modname]
+        local loader = package.preload[namespacedModuleId]
         if loader then
             local placeholder = {}
-            package.loaded[ns_modname] = placeholder
-            local ok, res = pcall(loader, ns_modname)
+            package.loaded[namespacedModuleId] = placeholder
+            local ok, res = pcall(loader, namespacedModuleId)
             if not ok then
-                package.loaded[ns_modname] = nil
+                package.loaded[namespacedModuleId] = nil
                 error(res)
             end
             if type(res) == 'table' then
@@ -36,7 +36,7 @@ return function(dunderPackageName, scriptPathLua, scriptPathInit, luaModulesPath
                 setmetatable(placeholder, getmetatable(res))
                 return placeholder
             elseif res ~= nil then
-                package.loaded[ns_modname] = res
+                package.loaded[namespacedModuleId] = res
                 return res
             else
                 return placeholder
@@ -51,7 +51,7 @@ return function(dunderPackageName, scriptPathLua, scriptPathInit, luaModulesPath
         local errmsg = ''
         local fname
         for path in string.gmatch(package.path, '[^;]+') do
-            local f = path:gsub('?', (modname:gsub('%.', '/')))
+            local f = path:gsub('?', (moduleName:gsub('%.', '/')))
             local file = io.open(f, 'r')
             if file then
                 fname = f
@@ -63,12 +63,12 @@ return function(dunderPackageName, scriptPathLua, scriptPathInit, luaModulesPath
         end
         if not fname then
             package.path = old_path
-            error('module "' .. modname .. '" not found:' .. errmsg)
+            error('module "' .. moduleName .. '" not found:' .. errmsg)
         end
 
         -- 4. Insert placeholder for circular dependencies
         local placeholder = {}
-        package.loaded[ns_modname] = placeholder
+        package.loaded[namespacedModuleId] = placeholder
 
         -- 5. Load and run the chunk, with error handling and guaranteed path restoration
         local ok, res
@@ -78,7 +78,7 @@ return function(dunderPackageName, scriptPathLua, scriptPathInit, luaModulesPath
         package.path = old_path
 
         if not ok then
-            package.loaded[ns_modname] = nil
+            package.loaded[namespacedModuleId] = nil
             error(res)
         end
 
@@ -89,7 +89,7 @@ return function(dunderPackageName, scriptPathLua, scriptPathInit, luaModulesPath
             setmetatable(placeholder, getmetatable(res))
             return placeholder
         elseif res ~= nil then
-            package.loaded[ns_modname] = res
+            package.loaded[namespacedModuleId] = res
             return res
         else
             return placeholder
