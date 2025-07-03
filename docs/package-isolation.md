@@ -6,7 +6,7 @@
 > applicable for glue code, UI scripting, or quick prototyping** in the Mudlet 
 > command line or script editor. 
 
-## Application Bootstrapping
+## Application bootstrapping
 
 This package provides a foundation for developing maintainable, 
 well-isolated Mudlet applications.  
@@ -51,7 +51,7 @@ table, keeping them separate from other packages and Mudlet’s own globals.
 > table: it is both the runtime context for your package code and the container
 > for your package's public symbols.
 
-## Integration and Event-Based Design
+## Integration and event-based design
 
 This package environment is designed for **event-driven integration**.  
 The recommended way for other scripts, packages, or users to interact and
@@ -87,7 +87,7 @@ end
 - Failing to enforce the correct environment will likely break isolation and 
   lead to subtle bugs or pollution of the global environment.
 
-## Package Isolation Details
+## Package isolation details
 
 - **Namespace as environment:** A dedicated namespace table is created and set 
   as the global environment for your package code using `setfenv`.
