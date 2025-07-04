@@ -27,18 +27,21 @@ return function(packageName)
     local luaModulesPathLua = basePathLuaModules .. sep .. '?.lua'
     local luaModulesPathInit = basePathLuaModules .. sep .. '?' .. sep .. 'init.lua'
 
-    -- Load isolated namespace
+    -- Load isolation helpers
     local isolatedNamespacePath = basePath .. sep .. 'scripts' .. sep .. 'boot_env' .. sep .. 'isolated_namespace.lua'
     local isolatedNamespaceCreator = assert(loadfile(isolatedNamespacePath))()
 
-    -- Load isolated require
     local isolatedRequirePath = basePath .. sep .. 'scripts' .. sep .. 'boot_env' .. sep .. 'isolated_require.lua'
     local isolatedRequireCreator = assert(loadfile(isolatedRequirePath))()
 
-    -- Create namespace and runtime env
+    local wrapEventHandlersPath = basePath .. sep .. 'scripts' .. sep .. 'boot_env' .. sep .. 'wrap_event_handlers.lua'
+    local wrapEventHandlers = assert(loadfile(wrapEventHandlersPath))()
+
+    -- Create isolated namespace and runtime environment
     local namespace = isolatedNamespaceCreator()
     local require_ = isolatedRequireCreator(packageId, scriptPathLua, scriptPathInit, luaModulesPathLua,
-        luaModulesPathInit, namespace)
+            luaModulesPathInit, namespace)
+    wrapEventHandlers(namespace)
 
     namespace.require = require_
     _G[packageId] = namespace
