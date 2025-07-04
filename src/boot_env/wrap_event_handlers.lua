@@ -150,8 +150,4 @@ return function(namespace)
             namespace[entry.name] = createWrapper(orig, entry.wrapArgs)
         end
     end
-
-    if not getmetatable(namespace) then
-        setmetatable(namespace, { __index = _G })
-    end
 end
