@@ -13,7 +13,19 @@ local function addPath(existingPaths, newPath, pathSep)
     return existingPaths
 end
 
+--- Creates a namespaced module loader with isolated environment and search paths.
+-- @param namespaceId string: The namespace prefix for module IDs.
+-- @param scriptPathLua string: Path for Lua scripts.
+-- @param scriptPathInit string: Path for Lua init scripts.
+-- @param luaModulesPathLua string: Path for Lua modules.
+-- @param luaModulesPathInit string: Path for Lua module init scripts.
+-- @param env table: The environment table for loaded modules.
+-- @return function: A loader function that takes a module name and returns the loaded module.
 return function(namespaceId, scriptPathLua, scriptPathInit, luaModulesPathLua, luaModulesPathInit, env)
+
+    --- Loads a module in the configured namespace, searching in the configured paths and using the configured environment.
+    -- @param moduleName string The name of the module to load (without namespace prefix).
+    -- @return any The loaded module (table or value), or raises an error if not found.
     return function(moduleName)
         local namespacedModuleId = namespaceId .. "." .. moduleName
 
@@ -50,7 +62,7 @@ return function(namespaceId, scriptPathLua, scriptPathInit, luaModulesPathLua, l
         -- 3. Search for file
         local old_path = package.path
         package.path = addPath(addPath(addPath(addPath(package.path, scriptPathLua, pathSep), scriptPathInit, pathSep),
-            luaModulesPathLua, pathSep), luaModulesPathInit, pathSep)
+                luaModulesPathLua, pathSep), luaModulesPathInit, pathSep)
 
         local errmsg = ''
         local fname

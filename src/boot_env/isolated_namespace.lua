@@ -1,3 +1,6 @@
+--- Creates a new isolated namespace table.
+-- The namespace inherits from the global environment (_G) but protects its metatable.
+-- @return table An isolated namespace table with _G as its __index.
 return function()
     local namespace = {}
     setmetatable(namespace, {

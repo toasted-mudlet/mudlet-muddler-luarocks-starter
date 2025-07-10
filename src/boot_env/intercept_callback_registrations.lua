@@ -73,14 +73,21 @@ local CALLBACK_FUNCTIONS = {
     { name = "setLabelClickCallback", wrapArgs = {2} },
 }
 
+
+--- Installs wrappers for Mudlet API callback and event handler registrations in a namespace.
+-- This function rebinds Mudlet's callback registration functions (triggers, timers, events, aliases, UI callbacks, etc.)
+-- so that handler functions and code snippets always execute in the provided namespace environment.
+-- Special-cases are handled for Mudlet's tempAnsiColorTrigger and tempKey functions.
+-- @param namespace table The environment/namespace table in which handlers should execute.
 return function(namespace)
-      --[[
-           Wraps a handler so it always runs in the correct environment.
-           - If handler is a function: returns a closure that sets its environment to `namespace` at call time.
-           - If handler is a string: compiles it and sets its environment to `namespace`.
-           - Otherwise, returns the handler as-is.
-       ]]
-       local function wrapHandler(handler)
+
+    --- Wraps a handler so it always runs in the correct environment.
+    -- If the handler is a function, returns a closure that sets its environment to `namespace` at call time.
+    -- If the handler is a string, compiles it and sets its environment to `namespace`.
+    -- Otherwise, returns the handler as-is.
+    -- @param handler function|string The handler function or Lua code as a string.
+    -- @return function The wrapped handler.
+    local function wrapHandler(handler)
            if type(handler) == "function" then
                return function(...)
                    setfenv(handler, namespace)
