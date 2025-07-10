@@ -1,4 +1,8 @@
-local pathSep = ';'
+local pathSep = package.config and package.config:sub(3,3) or ';'
+
+local function escapePattern(s)
+    return (s:gsub("([^%w])", "%%%1"))
+end
 
 local function addPath(existingPaths, newPath, pathSep)
     if existingPaths == '' then
@@ -50,7 +54,8 @@ return function(namespaceId, scriptPathLua, scriptPathInit, luaModulesPathLua, l
 
         local errmsg = ''
         local fname
-        for path in string.gmatch(package.path, '[^;]+') do
+        local sepPattern = escapePattern(pathSep)
+        for path in string.gmatch(package.path, '[^' .. sepPattern .. ']+') do
             local f = path:gsub('?', (moduleName:gsub('%.', '/')))
             local file = io.open(f, 'r')
             if file then
