@@ -63,7 +63,7 @@ jobs:
         run: luarocks install --tree=lua_modules busted
 
       - name: Run tests
-        run: ./lua_modules/bin/busted -f .busted src
+        run: ./lua_modules/bin/busted tests
 
       - name: Compose build context
         run: chmod +x ./scripts/compose_build_context.sh && ./scripts/compose_build_context.sh
