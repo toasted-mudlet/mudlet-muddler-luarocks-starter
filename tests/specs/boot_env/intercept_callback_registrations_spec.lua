@@ -1,4 +1,4 @@
-local boot_env = require 'boot_env.wrap_event_handlers'
+local boot_env = require 'boot_env.intercept_callback_registrations'
 
 describe('Mudlet callback environment wrapper', function()
     local called_args

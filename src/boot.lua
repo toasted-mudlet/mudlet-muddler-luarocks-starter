@@ -34,14 +34,14 @@ return function(packageName)
     local isolatedRequirePath = basePath .. sep .. 'scripts' .. sep .. 'boot_env' .. sep .. 'isolated_require.lua'
     local isolatedRequireCreator = assert(loadfile(isolatedRequirePath))()
 
-    local wrapEventHandlersPath = basePath .. sep .. 'scripts' .. sep .. 'boot_env' .. sep .. 'wrap_event_handlers.lua'
-    local wrapEventHandlers = assert(loadfile(wrapEventHandlersPath))()
+    local interceptorPath = basePath .. sep .. 'scripts' .. sep .. 'boot_env' .. sep .. 'intercept_callback_registrations.lua'
+    local interceptor = assert(loadfile(interceptorPath))()
 
     -- Create isolated namespace and runtime environment
     local namespace = isolatedNamespaceCreator()
     local require_ = isolatedRequireCreator(packageId, scriptPathLua, scriptPathInit, luaModulesPathLua,
             luaModulesPathInit, namespace)
-    wrapEventHandlers(namespace)
+    interceptor(namespace)
 
     namespace.require = require_
     _G[packageId] = namespace
