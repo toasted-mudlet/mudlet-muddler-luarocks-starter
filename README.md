@@ -47,33 +47,32 @@ MUDs (Multi-User Dungeons).
 
 - **Pragmatic package isolation:**  
   While this template provides strong environment isolation for your package 
-  code and event handlers, Mudlet’s Lua environment is still global at its core.
-  Packages that intentionally bypass the isolation mechanisms (e.g., by writing 
-  directly to `_G`) can escape and interfere with each other.
+  code and event handlers, Mudlet’s Lua environment remains fundamentally 
+  global. Packages that intentionally bypass the isolation mechanisms 
+  (e.g., by writing directly to `_G`) can escape and interfere with each other.
 - **Module name collisions:**  
   In standard Mudlet scripting, modules are cached globally by name. With this
   template, your package’s custom `require` ensures modules are namespaced and 
-  isolated, while remaining transparently cached. However, use of the global 
+  isolated, while still cached transparently. However, using the global 
   `require` can still cause conflicts.
 - **Pure-Lua dependencies only:**  
-  Only pure-Lua LuaRocks modules are supported. Packaging of native (binary)
-  modules is not supported and may not work reliably.
+  Only pure-Lua LuaRocks modules are supported. Native (binary) modules are not 
+  supported and may not work reliably.
 - **Shared base environment:**  
-  All packages inherit from Mudlet’s global environment. This means global 
-  variables and functions defined outside isolated environments remain visible
-  unless explicitly hidden or shadowed.
+  All packages inherit from Mudlet’s global environment. Global variables and 
+  functions defined outside isolated environments remain visible unless 
+  explicitly hidden or shadowed.
 - **No security sandbox:**  
   This isolation is pragmatic, not security-focused. Malicious or buggy code 
-  can still affect the entire Mudlet session if it deliberately escapes its
+  can still affect the entire Mudlet session if it deliberately escapes its 
   environment.
 - **Direct global access remains possible:**  
-  Code can still assign to or read from `_G` directly if it chooses, bypassing 
-  the isolation. Use care when integrating with legacy scripts or third-party
-  packages.
+  Code can still assign to or read from `_G` directly, bypassing the isolation.
+  Use caution when integrating with legacy scripts or third-party packages.
 - **Event handler isolation relies on registration:**  
-  Only event handlers registered from within the isolated environment are 
-  wrapped. Handlers registered globally or from outside the package context may 
-  not be isolated.
+  Only event handlers registered from within the isolated environment are
+  wrapped. Handlers registered globally or outside the package context may not 
+  be isolated.
 
 ## Getting Started
 
