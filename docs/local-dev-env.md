@@ -43,7 +43,7 @@ From the project root:
    ```
 2. **Run tests**:
    ```
-   ./lua_modules/bin/busted src
+   ./lua_modules/bin/busted tests
    ```
 
 > **Note:**  
